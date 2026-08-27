@@ -1,1 +1,49 @@
 # agents
+
+Source of truth for agent terminal setup: skills, plugins, and config shared
+across every Claude Code and OpenCode instance on this machine.
+
+## Layout
+
+- `skills/<name>/SKILL.md` — one directory per skill, in the standard
+  `SKILL.md` format both tools understand. Optional `references/`,
+  `scripts/`, `assets/` subdirectories are supported per the spec.
+- `plugins/` — reserved for later. Claude Code and OpenCode plugins use
+  incompatible formats (marketplace bundles vs. JS/TS hook scripts), so
+  each tool gets its own subdirectory and its own install step when needed.
+- `install.sh` — symlinks everything above into the places each tool reads
+  from. Re-run it after adding or editing a skill.
+
+## Install
+
+```sh
+./install.sh
+```
+
+This symlinks each `skills/<name>` into `~/.claude/skills/<name>` and
+`~/.config/opencode/skills/<name>`. Both Claude Code and OpenCode read
+`~/.claude/skills`, so one canonical copy here covers both tools.
+
+## Adding a skill
+
+Create `skills/<name>/SKILL.md` with YAML frontmatter (`name`, `description`),
+then run `./install.sh`.
+
+## Vendored skills
+
+- `unslop` — from [cursor/plugins](https://github.com/cursor/plugins/blob/main/pstack/skills/unslop/SKILL.md).
+- `grill-with-docs`, `resolving-merge-conflicts`, `tdd`, `to-spec`,
+  `implement`, `code-review`, `codebase-design`, `wait-what`, `teach`,
+  `improve-codebase-architecture`, `diagnosing-bugs`, `wayfinder`, `handoff`
+  — from [mattpocock/skills](https://github.com/mattpocock/skills), plus the
+  skills they depend on via internal `Skill` tool calls: `grilling`,
+  `domain-modeling`, `research`, `prototype` (pulled in by `grill-with-docs`,
+  `wayfinder`, and `improve-codebase-architecture`), and
+  `setup-matt-pocock-skills` (the per-repo config wizard `code-review` and
+  `to-spec` point you to when `docs/agents/issue-tracker.md` is missing).
+  Codex-specific `agents/openai.yaml` display metadata was dropped since
+  it's not used by Claude Code or OpenCode.
+
+  Run `/setup-matt-pocock-skills` once in any repo where you use the
+  engineering skills above — it sets the issue tracker, triage labels, and
+  domain-doc location the others assume.
