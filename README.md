@@ -29,6 +29,15 @@ This symlinks each `skills/<name>` into `~/.claude/skills/<name>` and
 Create `skills/<name>/SKILL.md` with YAML frontmatter (`name`, `description`),
 then run `./install.sh`.
 
+## Local skills
+
+Authored here, not vendored.
+
+- `post-pr-review` — user-invoked. Requests changes on a GitHub PR, carrying
+  the findings as inline comments in Spanish, anchored to lines its
+  `scripts/anchors.sh` proves are in the diff. Runs `/code-review` first when
+  no findings are in context, and shows the review before posting.
+
 ## Vendored skills
 
 - `unslop` — from [cursor/plugins](https://github.com/cursor/plugins/blob/main/pstack/skills/unslop/SKILL.md).
