@@ -34,7 +34,8 @@ then run `./install.sh`.
 - `unslop` — from [cursor/plugins](https://github.com/cursor/plugins/blob/main/pstack/skills/unslop/SKILL.md).
 - `grill-with-docs`, `resolving-merge-conflicts`, `tdd`, `to-spec`,
   `implement`, `code-review`, `codebase-design`, `wait-what`, `teach`,
-  `improve-codebase-architecture`, `diagnosing-bugs`, `wayfinder`, `handoff`
+  `improve-codebase-architecture`, `diagnosing-bugs`, `wayfinder`, `handoff`,
+  `writing-for-agents`
   — from [mattpocock/skills](https://github.com/mattpocock/skills), plus the
   skills they depend on via internal `Skill` tool calls: `grilling`,
   `domain-modeling`, `research`, `prototype` (pulled in by `grill-with-docs`,
