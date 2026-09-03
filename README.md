@@ -29,6 +29,27 @@ This symlinks each `skills/<name>` into `~/.claude/skills/<name>` and
 Create `skills/<name>/SKILL.md` with YAML frontmatter (`name`, `description`),
 then run `./install.sh`.
 
+## Commits
+
+Commits MUST follow [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/):
+
+```
+<type>(<scope>): <subject>
+```
+
+The subject MUST be imperative and lowercase. Types in use: `feat`, `fix`,
+`docs`, `refactor`, `chore`. The scope SHOULD be the skill directory the
+change touches, and MAY be omitted for repo-wide changes.
+
+```
+feat(post-pr-review): request changes on a PR in Spanish
+docs: require conventional commits
+chore: re-link skills after rename
+```
+
+A body is for a fact the diff cannot show, such as how a script was
+verified. Everything the diff already says stays out of it.
+
 ## Local skills
 
 Authored here, not vendored.
