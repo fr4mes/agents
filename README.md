@@ -58,6 +58,10 @@ Authored here, not vendored.
   the findings as inline comments in Spanish, anchored to lines its
   `scripts/anchors.sh` proves are in the diff. Runs `/code-review` first when
   no findings are in context, and shows the review before posting.
+- `re-review` — user-invoked. Follow-up review after the author addressed a
+  prior one: runs `/code-review` against the merge-base, grades each prior
+  finding against the current code (fixed, partial, open), and lists new
+  findings apart.
 
 ## Vendored skills
 
