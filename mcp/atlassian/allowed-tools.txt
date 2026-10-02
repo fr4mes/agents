@@ -1,0 +1,62 @@
+# Tools the official Atlassian Rovo MCP server may expose to agents.
+# One tool name per line. Anything not listed is blocked in Codex and Claude Code.
+# Source: https://developer.atlassian.com/cloud/rovo-mcp/guides/supported-tools/
+# The execute* meta-tools are left out on purpose: executeRead/executeWrite
+# can call any tool by name, which would bypass this list.
+
+# Common
+atlassianUserInfo
+getAccessibleAtlassianResources
+
+# Jira: read_jira
+getJiraIssue
+listJiraProjects
+listJiraProjectIssueTypesMetadata
+getJiraIssueTypeMetaWithFields
+listJiraIssueTransitions
+listJiraIssueLinkTypes
+listJiraIssueRemoteIssueLinks
+listJiraIssueWorklogs
+lookupJiraAccountId
+listJiraIssueAssignableUsers
+listJiraIssueComments
+listJiraIssueChangelogs
+getJiraCurrentUser
+getJiraUser
+listJiraStatuses
+listJiraProjectComponents
+getJiraProjectVersions
+getJiraProjectVersionRelatedWork
+listJiraBoards
+getJiraBoardConfig
+getJiraBoardIssueData
+getJiraBoardSprintData
+listJiraBoardSprints
+listJiraFilters
+listJiraDashboards
+getJiraEntityProperty
+downloadJiraIssueAttachment
+
+# Jira: search_jira
+searchJiraIssuesUsingJql
+
+# Jira: the only write allowed
+transitionJiraIssue
+
+# Confluence: read_confluence
+getConfluenceContent
+listConfluenceContent
+listConfluenceSpaces
+getConfluenceSpace
+getConfluencePersonalSpace
+listConfluenceComments
+getConfluenceComment
+listConfluenceContentVersions
+getConfluenceContentVersion
+diffConfluenceContentVersions
+listConfluenceAttachments
+getConfluenceAttachment
+downloadConfluenceAttachment
+
+# Confluence: search_confluence
+searchConfluence

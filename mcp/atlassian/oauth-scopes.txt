@@ -1,0 +1,20 @@
+# OAuth scopes Claude Code and Codex request from the Atlassian Rovo MCP server.
+# One scope per line. The token can never exceed these, even if a client-side
+# allowlist fails.
+# write:jira is required by transitionJiraIssue. It also permits create, edit,
+# and comment, which only allowed-tools.txt blocks.
+
+# Identity and token refresh
+read:me
+read:account
+email
+offline_access
+
+# Jira
+read:jira:agent-interface
+search:jira:agent-interface
+write:jira:agent-interface
+
+# Confluence
+read:confluence:agent-interface
+search:confluence:agent-interface
