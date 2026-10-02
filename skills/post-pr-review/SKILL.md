@@ -1,6 +1,6 @@
 ---
 name: post-pr-review
-description: Request changes on a GitHub PR with inline comments written in Spanish.
+description: Request changes on a GitHub PR with inline comments written in Spanish, then move its Jira ticket back to En desarrollo.
 disable-model-invocation: true
 ---
 
@@ -10,7 +10,9 @@ Requests changes on a GitHub pull request, carrying every finding as a review co
 
 ### 1. Pin the PR
 
-`gh pr view <arg> --json number,url,headRefOid`. Without an argument this resolves the PR of the current branch; with one it takes a number, URL, or branch name. Stop and ask the user if nothing resolves.
+`gh pr view <arg> --json number,url,headRefOid,title,headRefName`. Without an argument this resolves the PR of the current branch; with one it takes a number, URL, or branch name. Stop and ask the user if nothing resolves.
+
+Keep `title` and `headRefName` for step 7.
 
 Keep `headRefOid`. Passing it as `commit_id` pins the review to the commit the anchors came from, so a push mid-review fails loudly instead of landing comments on moved lines.
 
@@ -82,6 +84,16 @@ down to this:
 Make the calls below without asking. The user invoked this skill to post the review, so a confirmation step only stalls it.
 
 Once the review is submitted, print every comment as `path:line side` followed by its text, then the body if there is one, then the threads that resolved as fixed, each as `path:line` with the finding it carried.
+
+### 7. Move the Jira ticket
+
+A submitted `REQUEST_CHANGES` review sends the PR's ticket back to `En desarrollo`. Skip this step only when the user said not to move the ticket. When they named another status or column, that name is the target instead. Run it only after the submit in step 6 succeeded, so a failed review never moves a ticket.
+
+1. **Find the key.** Match `[A-Za-z][A-Za-z0-9]+-[0-9]+` against the PR `title` and `headRefName`, and uppercase each match, since branch names are often lowercase. Both carry the key by convention. When they yield no key, or different keys, leave the ticket where it is and tell the user why.
+2. **Find the transition.** Resolve the `cloudId` for `plibots.atlassian.net` with `getAccessibleAtlassianResources`, then call `listJiraIssueTransitions` on the key. Pick the transition whose target status name equals the target, ignoring case and accents. When the ticket already sits in the target, there is nothing to do. When no transition leads there, list the ones available and stop; never substitute a nearby status.
+3. **Transition** with `transitionJiraIssue`. Pass only the transition id: no comment, no field changes. When Jira rejects it for a required field, report the field and stop; never fill it in.
+
+Done when the ticket is in the target status, or the user knows why it is not. Print the key with its status before and after.
 
 ## The two calls
 
