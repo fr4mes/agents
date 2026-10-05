@@ -1,7 +1,6 @@
 ---
 name: re-review
-description: Re-review a branch or PR after the author addressed a prior review. Grades each prior finding against the current code and the author's replies, and lists new findings apart.
-disable-model-invocation: true
+description: Re-review a branch or PR after the author addressed a prior review. Grades each prior finding against the current code and the author's replies, and lists new findings apart. Use when a PR already has reviews from someone other than its author, when the user asks to re-review or check whether review feedback was addressed, or when another skill such as /review-qa hands over a PR with prior reviews.
 ---
 
 Follow-up review of a branch or PR whose author pushed fixes for an earlier review. It does two jobs and keeps them apart:

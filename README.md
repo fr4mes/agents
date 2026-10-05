@@ -149,10 +149,11 @@ Authored here, not vendored.
   no findings are in context, and shows the review after posting. Then moves
   the PR's Jira ticket to `En desarrollo`, or to the status the user names,
   unless told not to.
-- `re-review` — user-invoked. Follow-up review after the author addressed a
-  prior one: runs `/code-review` against the merge-base, grades each prior
-  finding against the current code and the author's replies (fixed, partial,
-  open, withdrawn), and lists new findings apart.
+- `re-review` — model-invoked, so `review-qa` sub-agents can run it.
+  Follow-up review after the author addressed a prior one: runs
+  `/code-review` against the merge-base, grades each prior finding against
+  the current code and the author's replies (fixed, partial, open,
+  withdrawn), and lists new findings apart.
 - `review-qa` — user-invoked. Reviews the PR of every SUP ticket in Jira's
   `QA técnico` status, least QA Tec Time left first, then least Time to
   resolution. Takes how many PRs to review at once and reviews each PR with
