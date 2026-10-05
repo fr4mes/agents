@@ -147,8 +147,55 @@ install_codex_atlassian() {
   echo "updated codex mcp atlassian (log in again: codex mcp login atlassian)"
 }
 
+# Restores vibe-wise learning context on session start and after compaction.
+VIBE_WISE_HOOK="vibe-wise-learn/scripts/session_start.py"
+
+# Replaces this repo's vibe-wise SessionStart entry in a hooks file, leaving
+# the rest of the file untouched.
+install_vibe_wise_hook() {
+  local label="$1" file="$2" matcher="$3" script="$4" tmp
+  mkdir -p "$(dirname "$file")"
+  [ -f "$file" ] || echo '{}' > "$file"
+  tmp="$(mktemp "$file.XXXXXX")"
+  jq --arg matcher "$matcher" --arg command "python3 \"$script\"" '
+    .hooks.SessionStart = (
+      [(.hooks.SessionStart // [])[]
+        | select(any(.hooks[]?; .command | test("vibe-wise-learn/scripts/session_start\\.py")) | not)]
+      + [{matcher: $matcher, hooks: [{type: "command", command: $command, timeout: 5}]}]
+    )' "$file" > "$tmp"
+  chmod --reference="$file" "$tmp"
+  if cmp -s "$tmp" "$file"; then
+    rm -f "$tmp"
+    echo "ok      $label vibe-wise SessionStart hook"
+    return
+  fi
+  mv "$tmp" "$file"
+  echo "updated $label vibe-wise SessionStart hook"
+}
+
+install_vibe_wise_hooks() {
+  if ! command -v python3 >/dev/null 2>&1; then
+    echo "skip    vibe-wise SessionStart hooks (python3 not installed)" >&2
+    return
+  fi
+  if command -v claude >/dev/null 2>&1; then
+    install_vibe_wise_hook claude "$HOME/.claude/settings.json" \
+      'startup|resume|clear|compact|fork' "$HOME/.claude/skills/$VIBE_WISE_HOOK"
+  else
+    echo "skip    claude vibe-wise SessionStart hook (claude not installed)" >&2
+  fi
+  if command -v codex >/dev/null 2>&1; then
+    # Codex runs a new or changed hook only after it is trusted in /hooks.
+    install_vibe_wise_hook codex "$HOME/.codex/hooks.json" \
+      'startup|resume|clear|compact' "$HOME/.agents/skills/$VIBE_WISE_HOOK"
+  else
+    echo "skip    codex vibe-wise SessionStart hook (codex not installed)" >&2
+  fi
+}
+
 install_claude_atlassian
 install_codex_atlassian
+install_vibe_wise_hooks
 
 # Plugin formats differ per tool (Claude Code marketplace bundles vs. Codex
 # plugins), so there is no single shared symlink target yet. Add per-tool

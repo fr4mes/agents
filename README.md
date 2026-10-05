@@ -81,7 +81,8 @@ Revoke access at id.atlassian.com → Security → Connected apps.
   `oauth-scopes.txt`. A server whose config differs from this repo is
   replaced, which drops its OAuth token.
 - `~/.claude/settings.json` — one `PreToolUse` hook entry per allowlisted
-  server. Re-runs replace the entry; the rest of the file is untouched.
+  server, and the vibe-wise `SessionStart` hook. Re-runs replace these
+  entries; the rest of the file is untouched.
 
 Claude Code has no per-server tool filter. The hook denies any tool not in
 `mcp/<server>/allowed-tools.txt`. A `permissions.deny` list only blocks tools
@@ -100,10 +101,17 @@ needs `jq`.
   `# BEGIN agents: …` and `# END agents: …` markers, regenerated on re-runs.
   Don't edit inside the markers. If `[mcp_servers.<name>]` already exists
   outside the block, the install stops instead of writing invalid TOML.
+- `~/.codex/hooks.json` — the vibe-wise `SessionStart` hook. Re-runs replace
+  the entry; the rest of the file is untouched. Codex runs a new or changed
+  hook only after you trust it: run `/hooks` in Codex and approve it.
 
 Codex filters tools natively with `enabled_tools`, generated from
 `allowed-tools.txt`, so blocked tools are never shown to the model. `scopes`
 is generated from `oauth-scopes.txt`.
+
+Codex ignores the `disable-model-invocation` frontmatter. A skill's
+`agents/openai.yaml` with `policy.allow_implicit_invocation: false` keeps it
+user-invoked in Codex.
 
 ## Adding a skill
 
@@ -171,3 +179,13 @@ Authored here, not vendored.
   Run `/setup-matt-pocock-skills` once in any repo where you use the
   engineering skills above — it sets the issue tracker, triage labels, and
   domain-doc location the others assume.
+- `vibe-wise-learn`, `vibe-wise-reset` — from
+  [nykooi1/vibe-wise](https://github.com/nykooi1/vibe-wise) at `1135f4a`, a
+  Claude Code plugin unpacked into plain skills so Codex gets it too. Both are
+  user-invoked: `/vibe-wise-learn` in Claude Code, `$vibe-wise-learn` in Codex.
+  The plugin's `learn` and `reset` skills were renamed, its hook moved to
+  `vibe-wise-learn/scripts/session_start.py`, and `${CLAUDE_PLUGIN_ROOT}` paths
+  now point at the skill directories. `install.sh` registers the hook for both
+  tools, so learning mode survives restarts and compaction. Learner notes
+  live in `.vibe-wise/` in each project. Needs `python3`. Upstream tests
+  were not vendored; they pass against the adapted scripts.
