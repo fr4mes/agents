@@ -165,17 +165,19 @@ Authored here, not vendored.
 
 - `unslop` — from [cursor/plugins](https://github.com/cursor/plugins/blob/main/pstack/skills/unslop/SKILL.md).
 - `grill-with-docs`, `resolving-merge-conflicts`, `tdd`, `to-spec`,
-  `implement`, `code-review`, `codebase-design`, `wait-what`, `teach`,
-  `improve-codebase-architecture`, `diagnosing-bugs`, `wayfinder`, `handoff`,
-  `writing-for-agents`
+  `to-tickets`, `implement`, `implement-spec`, `code-review`,
+  `codebase-design`, `wait-what`, `teach`, `improve-codebase-architecture`,
+  `diagnosing-bugs`, `wayfinder`, `handoff`, `writing-for-agents`
   — from [mattpocock/skills](https://github.com/mattpocock/skills), plus the
   skills they depend on via internal `Skill` tool calls: `grilling`,
   `domain-modeling`, `research`, `prototype` (pulled in by `grill-with-docs`,
   `wayfinder`, and `improve-codebase-architecture`), and
-  `setup-matt-pocock-skills` (the per-repo config wizard `code-review` and
-  `to-spec` point you to when `docs/agents/issue-tracker.md` is missing).
-  Codex-specific `agents/openai.yaml` display metadata was dropped; Codex
-  reads the `SKILL.md` frontmatter without it.
+  `setup-matt-pocock-skills` (the per-repo config wizard `code-review`,
+  `to-spec`, `to-tickets`, and `implement-spec` point you to when
+  `docs/agents/issue-tracker.md` is missing).
+  Upstream `agents/openai.yaml` display metadata was dropped. User-invoked
+  skills keep an `agents/openai.yaml` with only the
+  `allow_implicit_invocation: false` policy.
 
   Run `/setup-matt-pocock-skills` once in any repo where you use the
   engineering skills above — it sets the issue tracker, triage labels, and
