@@ -12,9 +12,9 @@ Follow-up review of a branch or PR whose author pushed fixes for an earlier revi
 
 ### 1. Collect the prior findings and their replies
 
-Read the PR with the query under **Reading prior reviews** on every re-review, even when a prior review is already in session context. Use that context to identify findings, and fetch the current PR discussion to read all replies before grading. A prior finding is any review thread, or point in a review body, from a **prior reviewer**: anyone who submitted a review other than the PR author, excluding bots (`author.__typename` is `Bot`). Take resolved threads too: an author can resolve a thread without fixing it.
+Read the PR discussion as [`../code-review/PR-DISCUSSION.md`](../code-review/PR-DISCUSSION.md) describes on every re-review, even when a prior review is already in session context. Use that context to identify findings, and fetch the current discussion to read all replies before grading. A prior finding is any review thread, or point in a review body, from a **prior reviewer**: anyone who submitted a review other than the PR author, excluding bots (`author.__typename` is `Bot`). Take resolved threads too: an author can resolve a thread without fixing it.
 
-Attach to each finding every reply that answers it: the later comments in its thread, and review bodies or PR conversation comments that name it. Read each reply in full. A reply from the PR author is their **response**. Preserve each response's full body, author, timestamp, and comment URL for the report.
+Attach to each finding every reply that answers it: the later comments in its thread, and review bodies, conversation comments, or the PR description when they name it. Read each reply in full. An **author note** that answers a finding is its **response**. Preserve each response's full body, author, timestamp, and comment URL for the report.
 
 Done when every prior finding sits in one list with its file, its line, the problem it names, and its responses. With no prior findings there is nothing to verify, so tell the user to run `/code-review` instead and stop.
 
@@ -22,7 +22,7 @@ Done when every prior finding sits in one list with its file, its line, the prob
 
 The fixed point is the PR's merge-base, never the commit the last review saw. A diff that only covers the fix commits hides every unfixed finding in code the author left alone, so those findings look fixed.
 
-Resolve the base with `gh pr view <arg> --json baseRefName`, or take the one the user names. Run `/code-review` against it.
+Resolve the base with `gh pr view <arg> --json baseRefName`, or take the one the user names. Run `/code-review` against it on this PR, so it weighs every author note and reuses the discussion from step 1.
 
 ### 3. Grade each prior finding
 
@@ -41,55 +41,18 @@ Done when every prior finding carries a grade, every grade other than **Fixed** 
 
 ### 4. Split out the new findings
 
-A new finding is one from step 2 that no prior finding covers. A step 2 finding that restates a prior one belongs to that finding's grade, never to this list.
+A new finding is one from step 2 that no prior finding covers. A step 2 finding that restates a prior one belongs to that finding's grade, never to this list. An **Explained** finding from step 2 stays in its axis's `Explained` list, never in this one.
 
 ### 5. Report
 
 Print, in order:
 
-1. `## Prior findings`: each as `path:line`, its grade, and one line on what remains when it is not **Fixed**. When the finding has a response, explain how it weighed in. For every **Partial** or **Open** finding, include every response from the PR author in full as a blockquote beside the finding, in chronological order. Label each with the author, timestamp, and a link to the original comment. Preserve the original wording and Markdown without shortening, paraphrasing, or replacing text with ellipses. Keep the agent's assessment separate from the quoted replies, and explain why the finding still applies after considering them. If the author has not replied, say so.
-2. `## New findings`: under `### Standards` and `### Spec`, as `/code-review` reports them.
+1. `## Prior findings`: each as `path:line`, its grade, and one line on what remains when it is not **Fixed**. Beside every finding, whatever its grade, quote each response in full as a blockquote, in chronological order. Label each with the author, timestamp, and a link to the original comment. Preserve the original wording and Markdown without shortening, paraphrasing, or replacing text with ellipses. Keep the agent's assessment separate from the quoted responses and say how they weighed in; for a **Partial** or **Open** finding, say why it still applies after them. If the author has not replied, say so.
+2. `## Author notes`: as `/code-review` reports them, minus the notes already quoted under Prior findings.
+3. `## New findings`: under `### Standards` and `### Spec`, as `/code-review` reports them, each with its `Explained` list.
 
-End with one line: counts of **Fixed**, **Partial**, **Open**, and **Withdrawn**, then the count of new findings per axis.
+End with one line: counts of **Fixed**, **Partial**, **Open**, and **Withdrawn**, then the count of new and explained findings per axis.
 
-Done when every **Partial** and **Open** finding includes the author's full responses or an explicit note that there are none, so the user can decide whether to keep it.
+Done when every author note appears in full exactly once, beside its finding or under Author notes, and every prior finding carries its responses or an explicit note that there are none, so the user can decide whether to keep it.
 
-The **Partial**, **Open**, and new findings are candidates for a later `/post-pr-review`. Carry forward the user's decisions about which findings to keep. **Withdrawn** findings stay out of it.
-
-## Reading prior reviews
-
-Start with this GraphQL query for reviews, threads and replies, and conversation comments. Follow `pageInfo.endCursor` for every connection with `hasNextPage: true`, including comments within each thread, until all pages have been read. `<owner>` and `<repo>` are the base repo, from `gh repo view --json owner,name`.
-
-```sh
-gh api graphql -f query='
-  query($owner: String!, $repo: String!, $number: Int!) {
-    repository(owner: $owner, name: $repo) {
-      pullRequest(number: $number) {
-        author { login }
-        reviews(first: 100) {
-          pageInfo { hasNextPage endCursor }
-          nodes { author { __typename login } state body submittedAt url }
-        }
-        reviewThreads(first: 100) {
-          pageInfo { hasNextPage endCursor }
-          nodes {
-            id
-            isResolved
-            isOutdated
-            resolvedBy { login }
-            comments(first: 100) {
-              pageInfo { hasNextPage endCursor }
-              nodes { author { __typename login } body path line originalLine createdAt url }
-            }
-          }
-        }
-        comments(first: 100) {
-          pageInfo { hasNextPage endCursor }
-          nodes { author { login } body createdAt url }
-        }
-      }
-    }
-  }' -F owner=<owner> -F repo=<repo> -F number=<number>
-```
-
-A thread's first comment is the finding; its author is the reviewer. Skip reviews in state `PENDING`, which only their author can see. A review in state `COMMENTED` with an empty body is the wrapper of its inline threads and adds nothing of its own.
+The **Partial**, **Open**, and new findings are candidates for a later `/post-pr-review`. Carry forward the user's decisions about which findings to keep. **Withdrawn** and **Explained** findings stay out of it.

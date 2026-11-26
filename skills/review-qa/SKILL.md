@@ -80,7 +80,7 @@ QA Tec Time: <friendly> · Time to resolution: <friendly> · <PR url>
 
 Under it, `Re-review` or `First review`, then the sub-agent's sections as the skill reported them, plus any title or branch flag from step 4.
 
-Then `## Not reviewed`: each skipped ticket with its reason. End with one line: PRs reviewed, split into first reviews and re-reviews; findings per axis across all of them, counting **Partial** and **Open** prior findings with the new ones; and the ticket with the least QA Tec Time left.
+Then `## Not reviewed`: each skipped ticket with its reason. End with one line: PRs reviewed, split into first reviews and re-reviews; findings per axis across all of them, counting **Partial** and **Open** prior findings with the new ones; findings the author explained or withdrew; and the ticket with the least QA Tec Time left.
 
 To post a review, the user runs `/post-pr-review` on that PR. Remaining findings request changes and return the ticket to `En desarrollo`; a clean review approves the PR and moves the ticket to `QA Negocio`.
 
@@ -98,7 +98,7 @@ Pass the ticket key, the `cloudId`, the PR URL, its `baseRefName`, `headRefOid` 
 
    The worktree's `HEAD` MUST equal `headRefOid`. A mismatch means the PR moved; report it and stop.
 3. **Review.** In the worktree, with the ticket from step 1 as the spec, so `docs/agents/issue-tracker.md` is not needed:
-   - **No prior reviews**: run `/code-review` with the fixed point `git merge-base HEAD origin/<baseRefName>`.
+   - **No prior reviews**: run `/code-review` on the PR URL with the fixed point `git merge-base HEAD origin/<baseRefName>`. The worktree's detached `HEAD` resolves no PR, so the URL is what lets it read the author notes.
    - **Prior reviews**: run `/re-review` on the PR URL. It grades every prior finding against the current code and the author's replies, then reviews against the merge-base.
 
    Plibots deploys code only after its migrations succeed, so the old app never runs against the new schema. Drop every finding about that window, such as an expand/contract violation or a column made nullable while the previous version still reads it.
@@ -109,7 +109,7 @@ Pass the ticket key, the `cloudId`, the PR URL, its `baseRefName`, `headRefOid` 
    git -C ~/plibots/<repo> update-ref -d refs/review-qa/pr-<n>
    ```
 
-5. **Return** what the skill reported: `## Standards` and `## Spec` from `/code-review`, or `## Prior findings` and `## New findings` from `/re-review`. Nothing else.
+5. **Return** what the skill reported: `## Author notes`, `## Standards` and `## Spec` from `/code-review`, or `## Prior findings`, `## Author notes` and `## New findings` from `/re-review`. Every author note and response stays quoted in full. Nothing else.
 
 ## Ticket fields
 

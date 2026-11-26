@@ -27,7 +27,7 @@ Then list the open threads of any prior review of ours with the query under **Re
 Choose the review event from the remaining findings:
 
 - One or more findings: `REQUEST_CHANGES`. Done when each carries a file, a line, and the problem it names; continue to step 3.
-- No findings: `APPROVE`. Skip steps 3 and 4, then continue to step 5. Fixed and Withdrawn prior findings do not count as remaining findings; Partial and Open findings do.
+- No findings: `APPROVE`. Skip steps 3 and 4, then continue to step 5. Fixed and Withdrawn prior findings and Explained findings do not count as remaining findings; Partial and Open findings do.
 
 ### 3. Build the anchor set
 
