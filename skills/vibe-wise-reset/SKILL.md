@@ -8,19 +8,21 @@ disable-model-invocation: true
 
 Run this in the main conversation, only when explicitly invoked. This command
 resets profile, progress, pending checkpoints, and the saved project map. Source
-code, dependencies, Git history, other projects, and skill installation stay intact.
+code, dependencies, Git history, other projects, and plugin installation stay intact.
+
+If you are running in Codex rather than Claude Code, first read [codex.md](codex.md).
 
 1. Run the read-only preview for the user's current project directory. Replace
    `<skill directory>` with this skill's absolute directory and
    `<absolute project directory>` with its actual absolute path, safely quoted;
-   do not pass the placeholders literally.
+   do not pass the placeholder literally.
 
    ```sh
    python3 "<skill directory>/scripts/reset.py" --cwd "<absolute project directory>"
    ```
 
    The helper uses Learn's project-boundary and legacy-state lookup. If it reports
-   no notes, explain there's nothing to reset and suggest the `vibe-wise-learn` skill.
+   no notes, explain there's nothing to reset and suggest `/vibe-wise-learn`.
    On any error, stop and explain; don't improvise deletion commands.
 
 2. Show the returned absolute project and state paths, which notes will reset,
@@ -43,7 +45,7 @@ code, dependencies, Git history, other projects, and skill installation stay int
    reset fails, report it and any backup path; don't claim success or start onboarding.
    Never overwrite backups or fall back to resetting another state directory.
 
-4. On success, show the backup path. Load the `vibe-wise-learn` skill and resume Learn with
+4. On success, show the backup path. Read the `vibe-wise-learn` skill and resume Learn with
    the new incomplete profile. Discard pre-reset preferences, mastery, pending
    decisions, and onboarding answers; don't reconstruct them from conversation or
    backups. Inspect actual code to rebuild the map. Begin fresh onboarding with

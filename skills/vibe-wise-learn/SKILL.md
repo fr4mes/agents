@@ -1,6 +1,6 @@
 ---
 name: vibe-wise-learn
-description: Activate or resume learning-first development. You lead the design; the agent gives feedback, explains concepts, asks follow-ups, and writes the agreed code.
+description: Activate or resume learning-first development. You lead the design; Claude gives feedback, explains concepts, asks follow-ups, and writes the agreed code.
 disable-model-invocation: true
 ---
 
@@ -16,9 +16,10 @@ An ordinary build request in this mode retains that loop;
 only an explicit request to skip or pause bypasses it.
 Do not switch to a subagent or require manual coding by default.
 
-Read this skill's guides with a file-read tool instead of printing them with `cat`
-when one exists.
-Use a file search to discover optional learner-state files before reading them. A missing
+If you are running in Codex rather than Claude Code, first read [codex.md](codex.md).
+
+Use the Read tool for plugin guides instead of printing them with Bash `cat`.
+Use Glob to discover optional learner-state files before reading them. A missing
 `.vibe-wise/` directory is normal first-time setup, not an error. If a shell
 check is necessary, handle absence with an explicit conditional that succeeds;
 don't run `ls` on a possibly missing directory or hide actual read failures.
@@ -30,10 +31,11 @@ make a successful instruction read look like a failed tool call.
 Starting at the current working directory, look upward for `.vibe-wise/` or legacy
 `.sensible-vibes/`, preferring `.vibe-wise/` when both exist at the same level,
 stopping at the nearest `.git` directory or file (including a worktree root).
-Use the nearest existing state directory within that boundary. Keep using legacy
+Use the nearest existing state directory within that boundary. Without Git, check
+only the current directory; don't search its parents. Keep using legacy
 notes in place; never merge, move, or reset them automatically. If there is none,
 create `.vibe-wise/` at the Git root, or current directory without Git. Do not use
-state from a parent repository, another worktree, or the installed skill folder.
+state from a parent repository, another worktree, or the installed plugin folder.
 Do not follow symlinked state directories or files; explain the issue instead.
 
 If `profile.md` exists, read it and `project-map.md`. Search the entire `progress.md`

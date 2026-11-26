@@ -164,7 +164,7 @@ Authored here, not vendored.
 ## Vendored skills
 
 - `unslop` — from [cursor/plugins](https://github.com/cursor/plugins/blob/main/pstack/skills/unslop/SKILL.md).
-- `grill-with-docs`, `resolving-merge-conflicts`, `tdd`, `to-spec`,
+- `grill-with-docs`, `tdd`, `to-spec`,
   `to-tickets`, `implement`, `implement-spec`, `code-review`,
   `codebase-design`, `wait-what`, `teach`, `improve-codebase-architecture`,
   `diagnosing-bugs`, `wayfinder`, `handoff`, `writing-for-agents`
@@ -183,12 +183,24 @@ Authored here, not vendored.
   engineering skills above — it sets the issue tracker, triage labels, and
   domain-doc location the others assume.
 - `vibe-wise-learn`, `vibe-wise-reset` — from
-  [nykooi1/vibe-wise](https://github.com/nykooi1/vibe-wise) at `1135f4a`, a
+  [nykooi1/vibe-wise](https://github.com/nykooi1/vibe-wise) at `eefb53d`, a
   Claude Code plugin unpacked into plain skills so Codex gets it too. Both are
   user-invoked: `/vibe-wise-learn` in Claude Code, `$vibe-wise-learn` in Codex.
   The plugin's `learn` and `reset` skills were renamed, its hook moved to
   `vibe-wise-learn/scripts/session_start.py`, and `${CLAUDE_PLUGIN_ROOT}` paths
   now point at the skill directories. `install.sh` registers the hook for both
   tools, so learning mode survives restarts and compaction. Learner notes
-  live in `.vibe-wise/` in each project. Needs `python3`. Upstream tests
-  were not vendored; they pass against the adapted scripts.
+  live in `.vibe-wise/` in each project. Needs `python3`. Upstream Codex guides are included with paths and hook instructions adapted
+  to this layout. Upstream tests are not vendored.
+
+### Upstream revisions
+
+Vendored sources checked and updated on 2026-11-14:
+
+- [mattpocock/skills](https://github.com/mattpocock/skills/commit/5863806dd4e15c63174bee4e7515a4256792ecfa) at `5863806dd4e1`.
+- [cursor/plugins](https://github.com/cursor/plugins/commit/3dbd22ff12742fb28c9700b9760baa29ed41dc13) at `3dbd22ff1274`.
+- [nykooi1/vibe-wise](https://github.com/nykooi1/vibe-wise/commit/eefb53df406ab89e31444684ff32c1df205221f8) at `eefb53df406a`.
+
+`resolving-merge-conflicts` was removed because it is absent from the current
+Matt Pocock source tree. The separately downloaded Better Auth, Fallow, and
+find-skills installations are tracked in `~/.agents/.skill-lock.json`.

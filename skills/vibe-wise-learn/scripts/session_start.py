@@ -12,7 +12,7 @@ import re
 import sys
 
 
-# Find the installed skill from this script, not from the user's project folder.
+# Find the installed plugin from this script, not from the user's project folder.
 SKILL_ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -37,10 +37,24 @@ def profile_is_active(path):
     return has_content
 
 
+def git_root(cwd):
+    """Find the nearest repository or worktree root (a .git directory or file)."""
+    for directory in (cwd, *cwd.parents):
+        if (directory / ".git").exists():
+            return directory
+    return None
+
+
 def state_directory(cwd):
     """Find the nearest notes directory without crossing a Git project boundary."""
-    # Starting in a source subdirectory should still find the project's notes.
-    for directory in (cwd, *cwd.parents):
+    root = git_root(cwd)
+    # Within Git, a source subdirectory should still find the project's notes.
+    # Without Git there's no project boundary, so only the starting folder counts:
+    # searching upward could adopt notes from an unrelated parent folder.
+    candidates = [cwd] if root is None else [cwd, *cwd.parents][
+        : len(cwd.relative_to(root).parts) + 1
+    ]
+    for directory in candidates:
         # Prefer the new name at the nearest location; keep legacy notes in place.
         for name in (".vibe-wise", ".sensible-vibes"):
             state = directory / name
@@ -48,14 +62,11 @@ def state_directory(cwd):
                 # Stop even if this candidate is invalid. Falling back to a parent
                 # could silently load a different project's learner profile.
                 return state if state.is_dir() and not state.is_symlink() else None
-        # A .git file is a worktree boundary too. Never borrow another repo's state.
-        if (directory / ".git").exists():
-            break
     return None
 
 
 def restore(payload):
-    """Build the agent's restoration instructions, or return None to do nothing."""
+    """Build Claude's restoration instructions, or return None to do nothing."""
     if not isinstance(payload, dict) or payload.get("hook_event_name") != "SessionStart":
         return None
     raw_cwd = payload.get("cwd")
@@ -69,7 +80,7 @@ def restore(payload):
     state = state_directory(cwd)
     if state is None:
         return None
-    # Installing the skill alone doesn't enable learning in every repository.
+    # Installing the plugin alone doesn't enable learning in every repository.
     # First-time onboarding happens through the Learn skill, not this hook.
     if not profile_is_active(state / "profile.md"):
         return None
@@ -77,8 +88,8 @@ def restore(payload):
     # Bootstrap from source files instead of emitting partial notes or an incomplete
     # topic index. Output size is independent of the amount of learning history.
     context = (
-        "VibeWise is active for this project. Before responding or coding, read "
-        "the Learn guide and its referenced behavior instructions:\n"
+        "VibeWise is active for this project. Before responding or coding, use Read "
+        "to load the Learn guide and its referenced behavior instructions:\n"
         f"{SKILL_ROOT / 'SKILL.md'}\n\n"
         f"State directory: {state}\n"
         "Read profile.md and project-map.md there. Search the entire progress.md "
@@ -92,8 +103,8 @@ def restore(payload):
         "questions; do not repeat completed onboarding. If the profile is now "
         "paused, keep it paused: this hook is not an explicit Learn invocation."
     )
-    # Claude Code and Codex add additionalContext to the model's context. These are
-    # reading instructions for the agent; the hook itself hasn't loaded the map or progress.
+    # Claude Code adds additionalContext to the model's context. These are reading
+    # instructions for Claude; the hook itself hasn't loaded the map or progress.
     return {"hookSpecificOutput": {
         "hookEventName": "SessionStart", "additionalContext": context
     }}
