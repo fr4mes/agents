@@ -12,9 +12,9 @@ Follow-up review of a branch or PR whose author pushed fixes for an earlier revi
 
 ### 1. Collect the prior findings and their replies
 
-Take them from the review run earlier in this session. When none are in context, read the PR with the query under **Reading prior reviews**. A prior finding is any review thread, or point in a review body, from a **prior reviewer**: anyone who submitted a review other than the PR author, excluding bots (`author.__typename` is `Bot`). Take resolved threads too: an author can resolve a thread without fixing it.
+Read the PR with the query under **Reading prior reviews** on every re-review, even when a prior review is already in session context. Use that context to identify findings, and fetch the current PR discussion to read all replies before grading. A prior finding is any review thread, or point in a review body, from a **prior reviewer**: anyone who submitted a review other than the PR author, excluding bots (`author.__typename` is `Bot`). Take resolved threads too: an author can resolve a thread without fixing it.
 
-Attach to each finding every reply that answers it: the later comments in its thread, and PR conversation comments that name it. A reply from the PR author is their **response**.
+Attach to each finding every reply that answers it: the later comments in its thread, and review bodies or PR conversation comments that name it. Read each reply in full. A reply from the PR author is their **response**. Preserve each response's full body, author, timestamp, and comment URL for the report.
 
 Done when every prior finding sits in one list with its file, its line, the problem it names, and its responses. With no prior findings there is nothing to verify, so tell the user to run `/code-review` instead and stop.
 
@@ -47,16 +47,18 @@ A new finding is one from step 2 that no prior finding covers. A step 2 finding 
 
 Print, in order:
 
-1. `## Prior findings`: each as `path:line`, its grade, and one line on what remains when it is not **Fixed**. When the finding has a response, add one line on how it weighed in.
+1. `## Prior findings`: each as `path:line`, its grade, and one line on what remains when it is not **Fixed**. When the finding has a response, explain how it weighed in. For every **Partial** or **Open** finding, include every response from the PR author in full as a blockquote beside the finding, in chronological order. Label each with the author, timestamp, and a link to the original comment. Preserve the original wording and Markdown without shortening, paraphrasing, or replacing text with ellipses. Keep the agent's assessment separate from the quoted replies, and explain why the finding still applies after considering them. If the author has not replied, say so.
 2. `## New findings`: under `### Standards` and `### Spec`, as `/code-review` reports them.
 
 End with one line: counts of **Fixed**, **Partial**, **Open**, and **Withdrawn**, then the count of new findings per axis.
 
-The **Partial**, **Open**, and new findings form the set a later `/post-pr-review` posts. **Withdrawn** findings stay out of it.
+Done when every **Partial** and **Open** finding includes the author's full responses or an explicit note that there are none, so the user can decide whether to keep it.
+
+The **Partial**, **Open**, and new findings are candidates for a later `/post-pr-review`. Carry forward the user's decisions about which findings to keep. **Withdrawn** findings stay out of it.
 
 ## Reading prior reviews
 
-One GraphQL call returns the reviews, every thread with all its replies, and the conversation comments. `<owner>` and `<repo>` are the base repo, from `gh repo view --json owner,name`.
+Start with this GraphQL query for reviews, threads and replies, and conversation comments. Follow `pageInfo.endCursor` for every connection with `hasNextPage: true`, including comments within each thread, until all pages have been read. `<owner>` and `<repo>` are the base repo, from `gh repo view --json owner,name`.
 
 ```sh
 gh api graphql -f query='
@@ -65,21 +67,25 @@ gh api graphql -f query='
       pullRequest(number: $number) {
         author { login }
         reviews(first: 100) {
-          nodes { author { __typename login } state body submittedAt }
+          pageInfo { hasNextPage endCursor }
+          nodes { author { __typename login } state body submittedAt url }
         }
         reviewThreads(first: 100) {
+          pageInfo { hasNextPage endCursor }
           nodes {
             id
             isResolved
             isOutdated
             resolvedBy { login }
             comments(first: 100) {
-              nodes { author { __typename login } body path line originalLine createdAt }
+              pageInfo { hasNextPage endCursor }
+              nodes { author { __typename login } body path line originalLine createdAt url }
             }
           }
         }
         comments(first: 100) {
-          nodes { author { login } body createdAt }
+          pageInfo { hasNextPage endCursor }
+          nodes { author { login } body createdAt url }
         }
       }
     }
