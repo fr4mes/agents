@@ -81,7 +81,7 @@ Under it, `Re-review` or `First review`, then the sub-agent's sections as the sk
 
 Then `## Not reviewed`: each skipped ticket with its reason. End with one line: PRs reviewed, split into first reviews and re-reviews; findings per axis across all of them, counting **Partial** and **Open** prior findings with the new ones; and the ticket with the least QA Tec Time left.
 
-To post a review, the user runs `/post-pr-review` on that PR, which also moves the ticket back to `En desarrollo`.
+To post a review, the user runs `/post-pr-review` on that PR. Remaining findings request changes and return the ticket to `En desarrollo`; a clean review approves the PR and moves the ticket to `QA Negocio`.
 
 ## Sub-agent brief
 

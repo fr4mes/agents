@@ -1,10 +1,10 @@
 ---
 name: post-pr-review
-description: Request changes on a GitHub PR with inline comments written in Spanish, then move its Jira ticket back to En desarrollo.
+description: Post a Spanish GitHub PR review, requesting changes for remaining findings or approving a clean review, then move its Jira ticket to En desarrollo or QA Negocio.
 disable-model-invocation: true
 ---
 
-Requests changes on a GitHub pull request, carrying every finding as a review comment **anchored** to a line the diff actually contains, written in Spanish.
+Post the completed review on a GitHub pull request. Remaining findings become Spanish comments **anchored** to lines in the diff; a review with no remaining findings becomes an approval.
 
 ## Process
 
@@ -18,13 +18,16 @@ Keep `headRefOid`. Passing it as `commit_id` pins the review to the commit the a
 
 ### 2. Collect the findings
 
-Reuse the findings already in context from a review run this session. When there are none, run `/code-review` against the PR's merge-base first, then continue here with its output.
+Reuse the completed review already in context from this session, including a review that found nothing. When no completed review is available, run `/code-review` against the PR's merge-base first, then continue here with its output.
 
 Drop every finding about commit messages: their nomenclature, type, scope, subject, or body. This review covers the code the PR changes, so they stay out of the comments and out of the body.
 
 Then list the open threads of any prior review of ours with the query under **Resolving what the author fixed**. A thread whose finding the new run no longer raises is fixed. Keep its `id`, since step 6 resolves it.
 
-Done when every remaining finding carries a file, a line, and the problem it names. A review with no findings has nothing to request changes on, so report that and stop.
+Choose the review event from the remaining findings:
+
+- One or more findings: `REQUEST_CHANGES`. Done when each carries a file, a line, and the problem it names; continue to step 3.
+- No findings: `APPROVE`. Skip steps 3 and 4, then continue to step 5. Fixed and Withdrawn prior findings do not count as remaining findings; Partial and Open findings do.
 
 ### 3. Build the anchor set
 
@@ -38,7 +41,7 @@ Done when every finding holds an anchor from the script's output or has moved to
 
 Spanish prose. Identifiers, paths, commands, and code stay verbatim in whatever language the codebase uses.
 
-Here and in the body, computer science terms stay in English, the way the developers reading the review say them out loud: `merge`, `commit`, `push`, `branch`, `build`, `deploy`, `type`, `mock`, `flag`, `hook`, `linter`, `snapshot`. Where the sentence needs a verb, conjugate the English one: `mergear`, `commitear`, `pushear`, `deployar`, `testear`. Never reach for the dictionary translation, which reads as a machine wrote it: not `mezclar` for merge, not `empujar` for push, not `rama` for branch, not `bandera` for flag, not `instantánea` for snapshot.
+Here and in the body, computer science terms stay in English, the way the develo~pers reading the review say them out loud: `merge`, `commit`, `push`, `branch`, `build`, `deploy`, `type`, `mock`, `flag`, `hook`, `linter`, `snapshot`. Where the sentence needs a verb, conjugate the English one: `mergear`, `commitear`, `pushear`, `deployar`, `testear`. Never reach for the dictionary translation, which reads as a machine wrote it: not `mezclar` for merge, not `empujar` for push, not `rama` for branch, not `bandera` for flag, not `instantánea` for snapshot.
 
 The dialect is Colombian, never Argentine. Address the author as `usted` and conjugate for it: `revise el orden`, `mueva el guard`, `elimine el cast`, `si prefiere`. Impersonal phrasing beats direct address wherever it fits: `conviene mover el guard arriba`, `falta cubrir el caso vacío`. Voseo is out, so no `revisá`, `mové`, `tenés`, `podés`, `fijate`, `mirá`. `Tú` is out with it, so no `puedes`, no `tienes`, no `revisa`. So is Peninsular `vosotros`, `os` and `¿vale?`.
 
@@ -66,6 +69,8 @@ Done when every comment has been through `/unslop`.
 
 Submit a body when it carries what no single comment can: a pattern spanning several files, what has to land before the PR is mergeable, or which findings from an earlier review the author fixed. Otherwise submit the review with its comments alone, which step 6 supports.
 
+For an approval with no other useful body, use `Sin hallazgos pendientes.`. Apply the Spanish language rules from step 4 and `/unslop` to the body in either branch.
+
 Two things never go in the body:
 
 - Anything a comment already says. Naming the inline findings again, counting them, or announcing that they are commented inline tells the author nothing the comments do not.
@@ -83,11 +88,13 @@ down to this:
 
 Make the calls below without asking. The user invoked this skill to post the review, so a confirmation step only stalls it.
 
-Once the review is submitted, print every comment as `path:line side` followed by its text, then the body if there is one, then the threads that resolved as fixed, each as `path:line` with the finding it carried.
+Use **The two calls** for `REQUEST_CHANGES`, or **Submitting an approval** for `APPROVE`. Resolve qualifying fixed threads only after the chosen review has been submitted successfully.
+
+Once the review is submitted, print its event and URL, every comment as `path:line side` followed by its text, then the body if there is one, then the threads that resolved as fixed, each as `path:line` with the finding it carried.
 
 ### 7. Move the Jira ticket
 
-A submitted `REQUEST_CHANGES` review sends the PR's ticket back to `En desarrollo`. Skip this step only when the user said not to move the ticket. When they named another status or column, that name is the target instead. Run it only after the submit in step 6 succeeded, so a failed review never moves a ticket.
+A submitted `REQUEST_CHANGES` review sends the PR's ticket back to `En desarrollo`; a submitted `APPROVE` review sends it to `QA Negocio`. Skip this step only when the user said not to move the ticket. When they named another status or column, that name is the target instead. Run it only after the submit in step 6 succeeded, so a failed review never moves a ticket.
 
 1. **Find the key.** Match `[A-Za-z][A-Za-z0-9]+-[0-9]+` against the PR `title` and `headRefName`, and uppercase each match, since branch names are often lowercase. Both carry the key by convention. When they yield no key, or different keys, leave the ticket where it is and tell the user why.
 2. **Find the transition.** Resolve the `cloudId` for `plibots.atlassian.net` with `getAccessibleAtlassianResources`, then call `listJiraIssueTransitions` on the key. Pick the transition whose target status name equals the target, ignoring case and accents. When the ticket already sits in the target, there is nothing to do. When no transition leads there, list the ones available and stop; never substitute a nearby status.
@@ -123,9 +130,25 @@ Then submit it, adding `-f body=...` only when step 5 called for one:
 gh api --method POST repos/{owner}/{repo}/pulls/<number>/reviews/<id>/events -f event=REQUEST_CHANGES
 ```
 
-Every review submits as `REQUEST_CHANGES`, whatever the severity of the findings.
+Reviews with remaining findings submit as `REQUEST_CHANGES`, whatever their severity.
 
 Two calls rather than one because `body` is required when `REQUEST_CHANGES` rides along with the create call, and optional on submit. The split is what buys a review with no body.
+
+## Submitting an approval
+
+When no findings remain, submit an approval directly with the pinned `commit_id` and the body from step 5:
+
+```sh
+gh api --method POST repos/{owner}/{repo}/pulls/<number>/reviews --input approval.json
+```
+
+```json
+{
+  "commit_id": "<headRefOid>",
+  "event": "APPROVE",
+  "body": "Sin hallazgos pendientes."
+}
+```
 
 ## Resolving what the author fixed
 
@@ -151,7 +174,7 @@ gh api graphql -f query='
 
 A thread qualifies when it is ours, unresolved, and its finding is absent from the new run. Ours means the login `gh api user --jq .login` prints. `isOutdated` proves nothing on its own, since it says the line moved, not that the problem went away. Read the code at the thread's path before calling the finding fixed. A finding the new run raises again keeps its thread open.
 
-Resolve each qualifying thread once the submit below has succeeded, so a failed submit never leaves the PR with resolved threads and no review:
+Resolve each qualifying thread once the review submission has succeeded, so a failed submit never leaves the PR with resolved threads and no submitted review:
 
 ```sh
 gh api graphql -f query='
