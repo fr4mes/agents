@@ -41,13 +41,14 @@ Print the queue as a table: rank, key, summary, both remaining times as their `f
 
 Find the PR URL in the ticket's comments with `listJiraIssueComments`. Developers post it as `PR: https://github.com/Plibots/<repo>/pull/<n>`. When comments hold several distinct PRs, each is reviewed.
 
-When no comment has one but the `development` field reports an open pull request, search GitHub instead:
+When Jira comments yield no open PR, search GitHub by ticket key. Search even when the `development` field is empty or shows only a branch.
 
 ```sh
-gh search prs "<KEY>" --owner Plibots --state open --json url,title
+gh search prs "<KEY>" --owner Plibots --state open --match title --json url,title
+gh search prs --owner Plibots --state open --head "<KEY>" --json url,title
 ```
 
-Then read each candidate with `gh pr view <url> --json title,headRefName,baseRefName,headRefOid,state`. Skip it when `state` is not `OPEN`. The title and `headRefName` SHOULD both contain the ticket key; flag the PR when either does not, and review it anyway.
+Deduplicate the URLs. Read each candidate with `gh pr view <url> --json title,headRefName,baseRefName,headRefOid,state`. Skip it when `state` is not `OPEN`. The title and `headRefName` SHOULD both contain the ticket key; flag the PR when either does not, and review it anyway.
 
 When a T3 Code `link_pull_request` tool is available, link every resolved PR to this thread.
 
@@ -99,6 +100,8 @@ Pass the ticket key, the `cloudId`, the PR URL, its `baseRefName`, `headRefOid` 
 3. **Review.** In the worktree, with the ticket from step 1 as the spec, so `docs/agents/issue-tracker.md` is not needed:
    - **No prior reviews**: run `/code-review` with the fixed point `git merge-base HEAD origin/<baseRefName>`.
    - **Prior reviews**: run `/re-review` on the PR URL. It grades every prior finding against the current code and the author's replies, then reviews against the merge-base.
+
+   Plibots deploys code only after its migrations succeed, so the old app never runs against the new schema. Drop every finding about that window, such as an expand/contract violation or a column made nullable while the previous version still reads it.
 4. **Clean up**, whether the review succeeded or not:
 
    ```sh
@@ -116,4 +119,4 @@ Custom field IDs on `plibots.atlassian.net`. When one is missing from a response
 |---|---|---|
 | QA Tec Time | `customfield_10561` | SLA, first priority |
 | Time to resolution | `customfield_10050` | SLA, second priority |
-| development | `customfield_10000` | String summary of the Development panel; says whether a PR exists, never its URL |
+| development | `customfield_10000` | Development panel summary for context. GitHub lookup depends on the comment links and PR states. |
