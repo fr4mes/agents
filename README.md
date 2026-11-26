@@ -196,10 +196,10 @@ Authored here, not vendored.
 
 ### Upstream revisions
 
-Vendored sources checked and updated on 2026-11-14:
+Vendored sources checked and updated on 2026-11-26:
 
-- [mattpocock/skills](https://github.com/mattpocock/skills/commit/5863806dd4e15c63174bee4e7515a4256792ecfa) at `5863806dd4e1`.
-- [cursor/plugins](https://github.com/cursor/plugins/commit/3dbd22ff12742fb28c9700b9760baa29ed41dc13) at `3dbd22ff1274`.
+- [mattpocock/skills](https://github.com/mattpocock/skills/commit/6f7f7831a625f040a8e06a0e7954826b87ce775a) at `6f7f7831a625`.
+- [cursor/plugins](https://github.com/cursor/plugins/commit/b1fbf4b60ac6813b4583ccc356850dafcf492665) at `b1fbf4b60ac6`.
 - [nykooi1/vibe-wise](https://github.com/nykooi1/vibe-wise/commit/eefb53df406ab89e31444684ff32c1df205221f8) at `eefb53df406a`.
 
 `resolving-merge-conflicts` was removed because it is absent from the current
